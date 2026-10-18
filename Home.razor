@@ -1,0 +1,52 @@
+﻿@page "/"
+@using BlazorUsersJsonPlaceHolderApi.Models
+@inject HttpClient Http
+
+<PageTitle>Usuário JSONPlaceholder</PageTitle>
+
+<h1>Dados do Primeiro Usuário</h1>
+
+@if (primeiroUsuario != null)
+{
+    <div class="card p-3 mt-3" style="max-width: 400px;">
+        <p><strong>Nome:</strong> @primeiroUsuario.Nome</p>
+        <p><strong>Cidade:</strong> @(primeiroUsuario.Address?.Cidade ?? "N/A")</p>
+        <p><strong>Empresa:</strong> @(primeiroUsuario.Company?.Nome ?? "N/A")</p>
+    </div>
+}
+else if (!string.IsNullOrEmpty(mensagemErro))
+{
+    <div class="alert alert-danger mt-3">@mensagemErro</div>
+}
+else
+{
+    <p>A carregar dados da API...</p>
+}
+
+@code {
+    private Usuario? primeiroUsuario;
+    private string mensagemErro = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var usuarios = await Http.GetFromJsonAsync<List<Usuario>>("https://jsonplaceholder.typicode.com/users");
+
+            if (usuarios != null && usuarios.Count > 0)
+            {
+                // Pega a primeira pessoa retornada pela API (índice 0)
+                primeiroUsuario = usuarios[0];
+
+                // Imprime os dados na consola do navegador conforme pedido no exercício
+                Console.WriteLine($"Nome: {primeiroUsuario.Nome}");
+                Console.WriteLine($"Cidade: {primeiroUsuario.Address?.Cidade}");
+                Console.WriteLine($"Empresa: {primeiroUsuario.Company?.Nome}");
+            }
+        }
+        catch (Exception ex)
+        {
+            mensagemErro = $"Erro ao carregar dados: {ex.Message}";
+        }
+    }
+}
